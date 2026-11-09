@@ -65,17 +65,22 @@ def mail_configuration():
     if use_ssl not in {"true", "false"}:
         raise ValueError("SMTP_SSL debe ser true o false.")
 
+    sender = os.environ["EMAIL_FROM"]
+    recipients = [
+        address.strip()
+        for address in os.environ["EMAIL_TO"].split(",")
+        if address.strip()
+    ]
+    if sender.casefold() not in {address.casefold() for address in recipients}:
+        recipients.append(sender)
+
     return {
         "host": os.environ["SMTP_HOST"],
         "port": port,
         "user": os.environ["SMTP_USER"],
         "password": os.environ["SMTP_PASSWORD"],
-        "sender": os.environ["EMAIL_FROM"],
-        "recipients": [
-            address.strip()
-            for address in os.environ["EMAIL_TO"].split(",")
-            if address.strip()
-        ],
+        "sender": sender,
+        "recipients": recipients,
         "use_ssl": use_ssl == "true",
     }
 
