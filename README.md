@@ -5,9 +5,9 @@ Monitor para el show [BOM: Lali + Miranda! / Miranda! + Lali](https://www.movist
 ## Configuración
 
 1. En GitHub, abre **Settings → Secrets and variables → Actions** y crea estos repository secrets: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SSL`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM` y `EMAIL_TO`. El repositorio debe ser público para evitar cargos de Actions. No guardes contraseñas en archivos del repositorio.
-2. En **Actions**, habilita workflows y ejecuta **Ticket availability monitor → Run workflow** para probar.
+2. En **Actions**, habilita workflows. Para comprobar el correo sin esperar a que haya entradas, ejecuta **Ticket availability monitor → Run workflow** y selecciona `test_email`. Para probar el monitor completo, deja esa opción desmarcada.
 
-Ejemplo Gmail: `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_SSL=false`; usa una contraseña de aplicación para `SMTP_PASSWORD`, no tu contraseña habitual.
+Ejemplo Gmail: `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_SSL=false`; usa una contraseña de aplicación para `SMTP_PASSWORD`, no tu contraseña habitual. Una prueba envía un correo con asunto **Prueba del aviso de entradas - Movistar Arena** a `EMAIL_TO` y `EMAIL_FROM`; no confirma que haya entradas.
 
 El workflow apunta a revisar cada 5 minutos, pero GitHub puede demorar las tareas programadas: **no se garantiza un aviso en menos de 10 minutos**. La disponibilidad también puede agotarse antes de que llegue el correo.
 
@@ -23,6 +23,6 @@ py -m playwright install chromium
 Copy-Item .env.example .env
 ```
 
-Completa `.env` con SMTP y ejecuta `py .\monitor.py --once`. Para revisar cada 10 minutos en una computadora encendida, ejecuta `py .\monitor.py`.
+Completa `.env` con SMTP y ejecuta `py .\monitor.py --test-email` para enviar una prueba, o `py .\monitor.py --once` para consultar la disponibilidad. Para revisar cada 10 minutos en una computadora encendida, ejecuta `py .\monitor.py`.
 
 Pruebas: `py -m unittest .\test_monitor.py`.
