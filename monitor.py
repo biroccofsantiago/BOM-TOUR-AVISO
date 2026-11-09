@@ -164,17 +164,30 @@ def save_state(available):
         raise RuntimeError(f"No se pudo guardar {STATE_FILE.name}: {exc}") from exc
 
 
-def send_notification(config):
+def send_notification(config, test=False):
     message = EmailMessage()
-    message["Subject"] = "¡Hay entradas disponibles en Movistar Arena!"
+    message["Subject"] = (
+        "Prueba del aviso de entradas - Movistar Arena"
+        if test
+        else "¡Hay entradas disponibles en Movistar Arena!"
+    )
     message["From"] = config["sender"]
     message["To"] = ", ".join(config["recipients"])
-    message.set_content(
-        "El monitor detectó que al menos una fecha tiene habilitado el botón "
-        "de compra para BOM: Lali + Miranda! / Miranda! + Lali.\n\n"
-        f"Revisá el evento ahora: {EVENT_URL}\n\n"
-        "La disponibilidad puede cambiar rápidamente."
-    )
+    if test:
+        message.set_content(
+            "Este es un correo de prueba del monitor de entradas de "
+            "Movistar Arena.\n\n"
+            "El envío por correo funciona. Este mensaje no indica que haya "
+            "entradas disponibles y no se realizó ninguna compra.\n\n"
+            f"Evento vigilado: {EVENT_URL}"
+        )
+    else:
+        message.set_content(
+            "El monitor detectó que al menos una fecha tiene habilitado el botón "
+            "de compra para BOM: Lali + Miranda! / Miranda! + Lali.\n\n"
+            f"Revisá el evento ahora: {EVENT_URL}\n\n"
+            "La disponibilidad puede cambiar rápidamente."
+        )
 
     context = ssl.create_default_context()
     if config["use_ssl"]:
@@ -218,10 +231,21 @@ def main():
         action="store_true",
         help="Hace una sola revisión y termina.",
     )
+    parser.add_argument(
+        "--test-email",
+        action="store_true",
+        help="Envía un correo de prueba sin consultar el estado de las entradas.",
+    )
     args = parser.parse_args()
 
     load_dotenv()
     config = mail_configuration()
+
+    if args.test_email:
+        send_notification(config, test=True)
+        now = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
+        print(f"[{now}] Correo de prueba enviado a {', '.join(config['recipients'])}.")
+        return 0
 
     while True:
         started = time.monotonic()
